@@ -118,8 +118,9 @@ jobs:
        make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
        # 验证 COMPAT_VDSO 是否被禁用
        grep -E "CONFIG_(COMPAT_VDSO|LTO_CLANG|SHADOW_CALL_STACK)" out/.config || true
-     - name: Verify kernel config
-       run: |
+       
+    - name: Verify kernel config
+      run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/out
         echo "===== Current kernel config (relevant options) ====="
         grep -E "COMPAT_VDSO|LTO_CLANG|SHADOW_CALL_STACK" .config || echo "All disabled"

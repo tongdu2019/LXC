@@ -100,30 +100,26 @@ jobs:
       run: |
        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
        export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-zyc/bin:$PATH
+
        # 生成基础配置
        make -s -j$(nproc --all) O=out ARCH=arm64 vendor/vince-perf_defconfig
-       # 使用 scripts/config 禁用 COMPAT_VDSO
-       (cd out && ../scripts/config \
-        --disable COMPAT_VDSO \
-        --disable LTO_CLANG \
-        --disable SHADOW_CALL_STACK)
-       # 更新配置，自动处理依赖
-       make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
-       # 检查是否还有新选项，如果有，全部设为 n
-       make -s O=out ARCH=arm64 listnewconfig | while read sym; do
-         echo "Setting $sym=n"
-         echo "$sym=n" >> out/.config
-       done
-       # 再次更新配置
-       make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
-       # 验证 COMPAT_VDSO 是否被禁用
-       grep -E "CONFIG_(COMPAT_VDSO|LTO_CLANG|SHADOW_CALL_STACK)" out/.config || true
+
+       # 创建一个固定配置文件，强制禁用相关选项
+       cat > fixed-config << EOF
+       CONFIG_COMPAT_VDSO=n
+       CONFIG_LTO_CLANG=n
+       CONFIG_SHADOW_CALL_STACK=n
+       EOF
+
+       # 使用 KCONFIG_ALLCONFIG 强制应用这些设置
+       make -s -j$(nproc --all) O=out ARCH=arm64 KCONFIG_ALLCONFIG=$PWD/fixed-config olddefconfig
+
+       # 验证关键选项是否被正确禁用
+       echo "===== Verification of fixed options ====="
+       grep -E "COMPAT_VDSO|LTO_CLANG|SHADOW_CALL_STACK" out/.config || true
+       grep -E "# CONFIG_(COMPAT_VDSO|LTO_CLANG|SHADOW_CALL_STACK) is not set" out/.config || true
        
-    - name: Verify kernel config
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/out
-        echo "===== Current kernel config (relevant options) ====="
-        grep -E "COMPAT_VDSO|LTO_CLANG|SHADOW_CALL_STACK" .config || echo "All disabled"
+
 
 
     - name: Build kernel

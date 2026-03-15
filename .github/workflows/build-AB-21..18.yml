@@ -42,12 +42,10 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         mkdir clang-zyc
-        wget https://mirrors.edge.kernel.org/pub/tools/llvm/clang+llvm-21.1.8-aarch64-linux-gnu.tar.xz -O clang.tar.xz
-        tar -xf clang.tar.xz -C clang-mandi-sa --strip-components=1
+        wget https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.8/clang+llvm-21.1.8-x86_64-linux-gnu-ubuntu-24.04.tar.xz -O clang.tar.xz
+        tar -xf clang.tar.xz -C clang-zyc --strip-components=1
         rm clang.tar.xz
-        # 将 clang 的 bin 目录添加到 PATH
         echo "$GITHUB_WORKSPACE/kernel_workspace/clang-zyc/bin" >> $GITHUB_PATH
-        # 验证版本
         clang --version
 
               

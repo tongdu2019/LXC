@@ -103,7 +103,6 @@ jobs:
         export KBUILD_BUILD_HOST=17
         export KBUILD_BUILD_USER=HyperPower
         make -s -j$(nproc --all) O=out ARCH=arm64 vendor/vince-perf_defconfig
-        make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
         echo "CONFIG_COMPAT_VDSO=n" >> out/.config
         make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
         make -s -j$(nproc --all) O=out ARCH=arm64 ${{ env.KERNEL_CONFIG }}

@@ -103,9 +103,10 @@ jobs:
        # 生成基础配置
        make -s -j$(nproc --all) O=out ARCH=arm64 vendor/vince-perf_defconfig
        # 使用 scripts/config 禁用 COMPAT_VDSO
-       (cd out && ../scripts/config --disable COMPAT_VDSO)
-       # 可选：禁用其他可能导致交互的选项（如 LTO_CLANG、SHADOW_CALL_STACK）
-       # (cd out && ../scripts/config --disable LTO_CLANG --disable SHADOW_CALL_STACK)
+       (cd out && ../scripts/config \
+        --disable COMPAT_VDSO \
+        --disable LTO_CLANG \
+        --disable SHADOW_CALL_STACK)
        # 更新配置，自动处理依赖
        make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
        # 检查是否还有新选项，如果有，全部设为 n
@@ -116,7 +117,13 @@ jobs:
        # 再次更新配置
        make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
        # 验证 COMPAT_VDSO 是否被禁用
-       grep CONFIG_COMPAT_VDSO out/.config || echo "CONFIG_COMPAT_VDSO not found (expected if disabled)"
+       grep -E "CONFIG_(COMPAT_VDSO|LTO_CLANG|SHADOW_CALL_STACK)" out/.config || true
+     - name: Verify kernel config
+       run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/out
+        echo "===== Current kernel config (relevant options) ====="
+        grep -E "COMPAT_VDSO|LTO_CLANG|SHADOW_CALL_STACK" .config || echo "All disabled"
+
 
     - name: Build kernel
       run: |

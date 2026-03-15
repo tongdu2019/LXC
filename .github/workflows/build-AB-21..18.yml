@@ -42,8 +42,8 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         mkdir clang-zyc
-        wget https://cdn.kernel.org/pub/tools/llvm/files/llvm-21.1.8-x86 64.tar.xz
-        tar -xf llvm-21.1.8-x86 64.tar.xz
+        wget https://cdn.kernel.org/pub/tools/llvm/files/llvm-21.1.8-x86_64.tar.xz
+        tar -xf llvm-21.1.8-x86_64.tar.xz
         echo "$GITHUB_WORKSPACE/kernel_workspace/clang-zyc/bin" >> $GITHUB_PATH
         clang --version
 

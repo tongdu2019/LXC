@@ -1,4 +1,4 @@
-name: 高端机 zyc clang18
+name: 高端机 zyc clang21.8
 on:
   workflow_dispatch:
 
@@ -9,7 +9,7 @@ jobs:
     if: github.event.repository.owner.id == github.event.sender.id
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: 环境变量配置
       run: |
@@ -42,8 +42,14 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         mkdir clang-zyc
-        wget https://github.com/ZyCromerZ/Clang/releases/download/18.0.0-20230913-release/Clang-18.0.0-20230913.tar.gz
-        tar -C clang-zyc/ -zxf Clang-18.0.0-20230913.tar.gz
+        wget https://mirrors.edge.kernel.org/pub/tools/llvm/clang+llvm-21.1.8-aarch64-linux-gnu.tar.xz -O clang.tar.xz
+        tar -xf clang.tar.xz -C clang-mandi-sa --strip-components=1
+        rm clang.tar.xz
+        # 将 clang 的 bin 目录添加到 PATH
+        echo "$GITHUB_WORKSPACE/kernel_workspace/clang-zyc/bin" >> $GITHUB_PATH
+        # 验证版本
+        clang --version
+
               
     - name: 下载内核源码
       run: |
@@ -134,14 +140,14 @@ jobs:
         rm -rf AnyKernel3/ramdisk AnyKernel3/modules AnyKernel3/patch
         
     - name: 上传内核
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.KERNEL_ZIP_NAME }}
         path: kernel_workspace/AnyKernel3/*
 
     - name: 上传dtbo镜像
       if: env.DTBO_EXSIT == 'true' && env.NEED == 'true'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dtbo-image
         path: kernel_workspace/android-kernel/out/arch/arm64/boot/dtbo.img

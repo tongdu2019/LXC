@@ -42,7 +42,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         mkdir clang-zyc
-        wget https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.8/clang+llvm-21.1.8-x86_64-linux-gnu-ubuntu-24.04.tar.xz -O clang.tar.xz
+        wget https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.8/clang+llvm-21.1.8-x86_64-linux-gnu.tar.xz -O clang.tar.xz
         tar -xf clang.tar.xz -C clang-zyc --strip-components=1
         rm clang.tar.xz
         echo "$GITHUB_WORKSPACE/kernel_workspace/clang-zyc/bin" >> $GITHUB_PATH

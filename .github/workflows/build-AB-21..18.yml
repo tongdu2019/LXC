@@ -98,11 +98,25 @@ jobs:
 
     - name: Configure kernel
       run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-          export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-zyc/bin:$PATH
-          make -s -j$(nproc --all) O=out ARCH=arm64 vendor/vince-perf_defconfig
-          echo "CONFIG_COMPAT_VDSO=n" >> out/.config
-          make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
+       cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+       export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-zyc/bin:$PATH
+       # 生成基础配置
+       make -s -j$(nproc --all) O=out ARCH=arm64 vendor/vince-perf_defconfig
+       # 使用 scripts/config 禁用 COMPAT_VDSO
+       (cd out && ../scripts/config --disable COMPAT_VDSO)
+       # 可选：禁用其他可能导致交互的选项（如 LTO_CLANG、SHADOW_CALL_STACK）
+       # (cd out && ../scripts/config --disable LTO_CLANG --disable SHADOW_CALL_STACK)
+       # 更新配置，自动处理依赖
+       make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
+       # 检查是否还有新选项，如果有，全部设为 n
+       make -s O=out ARCH=arm64 listnewconfig | while read sym; do
+         echo "Setting $sym=n"
+         echo "$sym=n" >> out/.config
+       done
+       # 再次更新配置
+       make -s -j$(nproc --all) O=out ARCH=arm64 olddefconfig
+       # 验证 COMPAT_VDSO 是否被禁用
+       grep CONFIG_COMPAT_VDSO out/.config
 
     - name: Build kernel
       run: |
